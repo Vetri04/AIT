@@ -1,0 +1,126 @@
+---
+title: "STAT Final Project"
+author: "Vetrivel Saravanan"
+date: "2023-05-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+# Load the necessary packages
+library(tidyverse) # for data wrangling
+library(factoextra) # for clustering analysis
+
+# Load the data
+data <- read.csv("/Users/vetrisaravanan/Downloads/provisional_counts_of_deaths.csv")
+
+```
+```{r}
+data
+```
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r}
+# Select the relevant variables
+data_sub <- data %>%
+  select('Sex', 'Race', 'AgeGroup', 'AllCause', 'NaturalCause', 'Septicemia', 
+         'Malignant.neoplasms', `Diabetes.mellitus`, `Alzheimer.disease`,
+         `Influenza.and.pneumonia`, `Chronic.lower.respiratory.diseases`, 
+         `Other.diseases.of.respiratory.system`,
+         `Diseases.of.heart`, `Cerebrovascular.diseases`, COVID19)
+```
+
+```{r}
+data_sub
+```
+
+```{r}
+# Clean the data
+# Convert AgeGroup to numeric
+data_sub$AgeGroup <- as.numeric(gsub(" years", "", data_sub$AgeGroup))
+#data_sub = na.omit(data_sub)
+data_sub=na.omit(data_sub)
+
+```
+
+```{r}
+# Scale the data
+new_var1 <- rep(0, 3960) # create a vector of length 3960
+data$var1 <- new_var1      # replace the column with the new vector
+```
+
+```{r}
+set.seed(2)
+x= matrix(rnorm(50*2),ncol=2)
+plot(x)
+```
+```{r}
+install.packages("devtools")
+library(devtools)
+library(psych)
+library(tidyverse)
+pairs.panels(data_sub)
+```
+```{r}
+states= row.names(data_sub)
+apply(data_sub, 2, mean)
+```
+```{r}
+library(ggplot2)
+
+plot1=ggplot(data_sub, aes(Race))+geom_bar()+facet_wrap(~AgeGroup)
+plot1+coord_flip()
+
+```
+
+```{r}
+ggplot(data_sub, aes(x= Race , y= Influenza.and.pneumonia))+geom_point()+coord_flip()
+```
+
+```{r}
+ggplot(data, aes(x=Diseases.of.heart))+ geom_bar()+facet_wrap(~Sex)+scale_y_continuous(limits=c(0,10))+scale_x_continuous(limits=c(0,5000))
+
+```
+```{r}
+new_data= data_sub[-c(1,2,3)]
+
+summary(new_data)
+
+new_dataClasses <-factor(new_data$Diabetes.mellitus)
+
+pairs(new_data[,-1], col = new_dataClasses, upper.panel = NULL, pch = 16, cex = 0.5)
+legend("topright", bty = "n", legend = c("Cv1","Cv2","Cv3"), pch = 16, col = c("black","red","green"),xpd = T, cex = 2, y.intersp = 0.5)
+
+plot(new_data$Malignant.neoplasms[,1:2], col=Malignant.neoplasms)
+biplot(new_data$AllCause)
+```
+```{r}
+newPCA <- prcomp(new_data[,-1],center=TRUE,scale=TRUE)
+summary(newPCA)
+
+plot(newPCA$x[,1:2], col = new_dataClasses)
+
+```
+```{r}
+library(devtools)
+if(!require(ggbiplot)){
+    install_github("vqv/ggbiplot")
+    library(ggbiplot)
+}
+
+ggbiplot(newPCA,ellipse=TRUE,groups = new_dataClasses)
+```
+
+
+
